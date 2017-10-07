@@ -1,0 +1,4 @@
+PROJECT(AutomatonTest)
+
+ADD_SUBDIRECTORY(lib/gtest-1.7.0)
+ADD_SUBDIRECTORY(tests)

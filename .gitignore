@@ -1,0 +1,5 @@
+# CLion project specific settings
+.idea/
+
+# CLion build results
+cmake_modules

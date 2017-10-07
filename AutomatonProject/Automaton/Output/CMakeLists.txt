@@ -1,0 +1,6 @@
+PROJECT(Output)
+
+SET(SOURCE_FILES Output.h)
+
+ADD_LIBRARY(Output SHARED ${SOURCE_FILES})
+set_target_properties(Output PROPERTIES LINKER_LANGUAGE CXX)
