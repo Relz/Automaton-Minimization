@@ -1,7 +1,6 @@
 SET(SOURCE_FILES
         Automaton.cpp
-        Automaton.h
-        ../SfmlSprite.cpp ../SfmlSprite.h)
+        Automaton.h)
 
 ADD_SUBDIRECTORY(Input)
 ADD_SUBDIRECTORY(Output)

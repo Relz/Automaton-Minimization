@@ -1,80 +1,74 @@
 #include "stdafx.h"
 #include "constant.h"
 #include "Automaton/Automaton.h"
-#include "SfmlSprite.h"
 
 using namespace std;
-using namespace sf;
-
-void Update(RenderWindow & window, SfmlSprite & diagramBefore, SfmlSprite & diagramAfter)
-{
-	window.clear(Color::White);
-	window.draw(diagramBefore.sprite);
-	window.draw(diagramAfter.sprite);
-	window.display();
-}
-
-void HandleEvents(RenderWindow & window)
-{
-	Event event;
-	while (window.pollEvent(event))
-	{
-		if (event.type == Event::Closed)
-			window.close();
-	}
-}
 
 int main(int argc, char *argv[])
 {
-	if (argc != ARG_COUNT)
+	if (argc < ARG_COUNT)
 	{
 		std::cerr << "Ошибка: не указан файл ввода автомата\n";
+		return 1;
 	}
-	const string diagramBeforeFileName = "diagram_before.png";
-	const string diagramAfterFileName = "diagram_after.png";
+	string commandToViewDiagrams;
+	if (argc > ARG_COUNT)
+	{
+		commandToViewDiagrams = argv[ARG_COUNT];
+	}
 	try
 	{
-		CAutomaton automaton("input_moore.csv", cout);
+		CAutomaton automaton(argv[1], cout);
 		automaton.CreateDiagram(diagramBeforeFileName);
 		while (automaton.MinimizeAutomatonStep(diagramAfterFileName))
 		{
 		}
+		automaton.PrintEqualClassesToStatesVectorMap();
 	}
 	catch (invalid_argument & exception)
 	{
-		cerr << "Неверный параметр: " << exception.what();
+		cerr << "Неверный параметр: " << exception.what() << "\n";
+		return 1;
 	}
 	catch (runtime_error & exception)
 	{
-		cerr << "Ошибка выполнения: " << exception.what();
+		cerr << "Ошибка выполнения: " << exception.what() << "\n";
+		return 1;
 	}
 
-	ContextSettings settings;
-	settings.antialiasingLevel = ANTIALIASING_LEVEL;
-
-	SfmlSprite diagramBefore(diagramBeforeFileName);
-	SfmlSprite diagramAfter(diagramAfterFileName);
-
-	RenderWindow window(
-			VideoMode(SCREEN_SIZE.x, SCREEN_SIZE.y),
-			L"Минимизация автомата: До и После",
-			Style::Close,
-			settings
-	);
-	Vector2f windowCenter = Vector2f(window.getSize().x / 2.0f, window.getSize().y / 2.0f);
-	diagramBefore.sprite.setPosition(
-			(windowCenter.x - diagramBefore.GetWidth()) / 2,
-			windowCenter.y - diagramBefore.GetHeight() / 2
-	);
-	diagramAfter.sprite.setPosition(
-			windowCenter.x + (windowCenter.x - diagramBefore.GetWidth()) / 2,
-			windowCenter.y - diagramAfter.GetHeight() / 2
-	);
-	window.setFramerateLimit(60);
-	while (window.isOpen())
+	if (!commandToViewDiagrams.empty())
 	{
-		HandleEvents(window);
-		Update(window, diagramBefore, diagramAfter);
+		size_t argumentsCount = argc - ARG_COUNT;
+		char *arguments[argumentsCount + 2];
+		for (size_t i = 0; i < argumentsCount; ++i)
+		{
+			arguments[i] = argv[i + ARG_COUNT];
+		}
+		arguments[argumentsCount] = (char*)diagramAfterFileName.c_str();
+		arguments[argumentsCount + 1] = nullptr;
+		pid_t pid = fork();
+		if (pid == 0)
+		{
+			if (execvp(commandToViewDiagrams.c_str(), arguments) == -1)
+			{
+				cerr << "Ошибка запуска команды для отображения диаграммы конечного автомата, она доступны по следующему относительному путю: \n"
+				     << diagramAfterFileName << "\n";
+			}
+		}
+		else if (pid > 0)
+		{
+			arguments[argumentsCount] = (char*)diagramBeforeFileName.c_str();
+			if (execvp(commandToViewDiagrams.c_str(), arguments) == -1)
+			{
+				cerr << "Ошибка запуска команды для отображения диаграммы исходного автомата, она доступны по следующему относительному путю: \n"
+				     << diagramBeforeFileName << "\n";
+			}
+		}
+	}
+	else
+	{
+		cout << "Не указан параметр-команда для отображения диаграмм, они доступны по следующим относительным путям: \n"
+		     << diagramBeforeFileName << "\n" << diagramAfterFileName << "\n";
 	}
 	return 0;
 }

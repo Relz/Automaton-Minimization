@@ -7,6 +7,7 @@
 #include <iostream>
 #include <fstream>
 #include <algorithm>
+#include <queue>
 #include <boost/functional/hash.hpp>
 #include <boost/graph/graphviz.hpp>
 #include <boost/graph/adjacency_list.hpp>
@@ -14,6 +15,7 @@
 
 enum AutomatonType
 {
+	None,
 	Moore,
 	Mealy
 };
@@ -29,6 +31,13 @@ public:
 
 	void CreateDiagram(const std::string & diagramFileName);
 
+	void PrintStatesToEqualClassesMap() const;
+	void PrintEqualClassesToStatesVectorMap() const;
+	void PrintSourceStatesToTransitionsMap() const;
+	void PrintStatesToTransitionsMap() const;
+	void PrintFinalStatesToTransitionsMap() const;
+	void PrintStatesToInputSignalsToOutputSignalsMap() const;
+
 private:
 	AutomatonType DetermineAutomatonType(const std::string & inputFilename);
 	void ReadAutomatonMoore();
@@ -37,11 +46,16 @@ private:
 	void RefreshStatesToTransitionsMap();
 	bool RefreshStatesEqualClassesMaps();
 
+	bool AutomatonsAreEquals();
 	void CreateResults();
 	void CreateDiagram(
 			const std::string & diagramFileName,
 			const std::unordered_map<size_t, std::unordered_map<size_t, size_t>> & transitionMap
 	);
+
+	void PrintMap(const std::unordered_map<size_t, size_t> & map) const;
+	void PrintMapContainer(const std::unordered_map<size_t, std::vector<size_t>> & map) const;
+	void PrintMapMap(const std::unordered_map<size_t, std::unordered_map<size_t, size_t>> & map) const;
 
 	CInput _input;
 	COutput _output;
@@ -54,6 +68,7 @@ private:
 
 	bool _minimized = false;
 	AutomatonType _automatonType;
+	size_t _startState = SIZE_MAX;
 
 	static size_t ComputeMapHash(std::unordered_map<size_t, size_t> &map);
 };

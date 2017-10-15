@@ -15,10 +15,3 @@ ADD_SUBDIRECTORY(Automaton)
 
 TARGET_LINK_LIBRARIES(AutomatonProject PCH)
 TARGET_LINK_LIBRARIES(AutomatonProject Automaton)
-
-set(CMAKE_MODULE_PATH "${CMAKE_CURRENT_LIST_DIR}/cmake_modules")
-find_package(SFML REQUIRED system window graphics network)
-if (SFML_FOUND)
-    include_directories(${SFML_INCLUDE_DIR})
-    target_link_libraries(AutomatonProject ${SFML_LIBRARIES})
-endif()

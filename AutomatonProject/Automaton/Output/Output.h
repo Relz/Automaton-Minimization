@@ -50,6 +50,50 @@ public:
 		PrintNewLine();
 	}
 
+	template<typename valueT, template<typename ... > typename ContainerT>
+	void PrintContainer(const ContainerT<valueT, std::allocator<valueT>> & container, const Settings & settings = Settings()) const
+	{
+		if (settings.printContainerMethod == PrintContainerMethod::NORMAL)
+		{
+			copy(container.begin(), container.end(), std::ostream_iterator<valueT, char>(m_out, settings.delimiter.c_str()));
+		}
+		else if (settings.printContainerMethod == PrintContainerMethod::REVERSE)
+		{
+			copy(container.rbegin(), container.rend(), std::ostream_iterator<valueT, char>(m_out, settings.delimiter.c_str()));
+		}
+	}
+
+	template<typename TKey, typename TValue>
+	void PrintMap(const std::unordered_map<TKey, TValue> & unorderedMap, const std::string keyValueDelimiter, const Settings & settings = Settings()) const
+	{
+		for (auto pair : unorderedMap)
+		{
+			Print(pair.first, keyValueDelimiter, pair.second, settings.delimiter);
+		}
+	}
+
+	template<typename TKey, typename TValue, template<typename ... > typename TContainer>
+	void PrintMapContainer(const std::unordered_map<TKey, TContainer<TValue, std::allocator<TValue>>> & unorderedMap, const std::string keyValueDelimiter, const Settings & mapSettings = Settings(), const Settings & containerSettings = Settings()) const
+	{
+		for (auto pair : unorderedMap)
+		{
+			Print(pair.first, keyValueDelimiter);
+			PrintContainer(pair.second, containerSettings);
+			Print(mapSettings.delimiter);
+		}
+	}
+
+	template<typename TKey0, typename TKey1, typename TValue>
+	void PrintMapMap(const std::unordered_map<TKey0, std::unordered_map<TKey1, TValue>> & unorderedMap, const std::string keyValueDelimiter, const Settings & mapSettings = Settings(), const Settings & innerMapSettings = Settings()) const
+	{
+		for (auto pair : unorderedMap)
+		{
+			Print(pair.first, keyValueDelimiter);
+			PrintMap(pair.second, keyValueDelimiter, innerMapSettings);
+			Print(mapSettings.delimiter);
+		}
+	}
+
 private:
 	void PrintSimpleTypeVariable() const {return;}
 
