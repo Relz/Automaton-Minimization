@@ -4,17 +4,46 @@
 
 using namespace std;
 
+void OpenDiagrams(const string & commandToViewDiagrams, int argc, char *argv[]) {
+	size_t argumentsCount = argc - REQUIRED_ARGC;
+	char *arguments[argumentsCount + 2];
+	for (size_t i = 0; i < argumentsCount; ++i)
+	{
+		arguments[i] = argv[i + REQUIRED_ARGC];
+	}
+	arguments[argumentsCount] = (char*)diagramAfterFileName.c_str();
+	arguments[argumentsCount + 1] = nullptr;
+	pid_t pid = fork();
+	if (pid == 0)
+	{
+		if (execvp(commandToViewDiagrams.c_str(), arguments) == -1)
+		{
+			cerr << "Ошибка запуска команды для отображения диаграммы конечного автомата, она доступны по следующему относительному путю: \n"
+			     << diagramAfterFileName << "\n";
+		}
+	}
+	else if (pid > 0)
+	{
+		arguments[argumentsCount] = (char*)diagramBeforeFileName.c_str();
+		if (execvp(commandToViewDiagrams.c_str(), arguments) == -1)
+		{
+			cerr << "Ошибка запуска команды для отображения диаграммы исходного автомата, она доступны по следующему относительному путю: \n"
+			     << diagramBeforeFileName << "\n";
+		}
+	}
+}
+
 int main(int argc, char *argv[])
 {
-	if (argc < ARG_COUNT)
+	if (argc < REQUIRED_ARGC)
 	{
 		std::cerr << "Ошибка: не указан файл ввода автомата\n";
 		return 1;
 	}
 	string commandToViewDiagrams;
-	if (argc > ARG_COUNT)
+	if (argc > REQUIRED_ARGC)
 	{
-		commandToViewDiagrams = argv[ARG_COUNT];
+		commandToViewDiagrams = argv[REQUIRED_ARGC];
 	}
 	try
 	{
@@ -38,37 +67,13 @@ int main(int argc, char *argv[])
 
 	if (!commandToViewDiagrams.empty())
 	{
-		size_t argumentsCount = argc - ARG_COUNT;
-		char *arguments[argumentsCount + 2];
-		for (size_t i = 0; i < argumentsCount; ++i)
-		{
-			arguments[i] = argv[i + ARG_COUNT];
-		}
-		arguments[argumentsCount] = (char*)diagramAfterFileName.c_str();
-		arguments[argumentsCount + 1] = nullptr;
-		pid_t pid = fork();
-		if (pid == 0)
-		{
-			if (execvp(commandToViewDiagrams.c_str(), arguments) == -1)
-			{
-				cerr << "Ошибка запуска команды для отображения диаграммы конечного автомата, она доступны по следующему относительному путю: \n"
-				     << diagramAfterFileName << "\n";
-			}
-		}
-		else if (pid > 0)
-		{
-			arguments[argumentsCount] = (char*)diagramBeforeFileName.c_str();
-			if (execvp(commandToViewDiagrams.c_str(), arguments) == -1)
-			{
-				cerr << "Ошибка запуска команды для отображения диаграммы исходного автомата, она доступны по следующему относительному путю: \n"
-				     << diagramBeforeFileName << "\n";
-			}
-		}
+		OpenDiagrams(commandToViewDiagrams, argc, argv);
 	}
 	else
 	{
 		cout << "Не указан параметр-команда для отображения диаграмм, они доступны по следующим относительным путям: \n"
 		     << diagramBeforeFileName << "\n" << diagramAfterFileName << "\n";
 	}
+
 	return 0;
 }

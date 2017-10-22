@@ -233,13 +233,15 @@ bool CAutomaton::AutomatonsAreEquals()
 	{
 		std::unordered_set<size_t> processed;
 		std::queue<std::pair<size_t, size_t>> queue;
-		queue.emplace(equalClassToStatesVector.first, _equalClassesToStatesVectors.at(equalClassToStatesVector.first).at(0));
+		for (size_t i = 0; i < equalClassToStatesVector.second.size(); ++i) {
+			queue.emplace(equalClassToStatesVector.first, equalClassToStatesVector.second.at(i));
+		}
 		while (!queue.empty())
 		{
 			size_t equalClass = queue.front().first;
 			size_t state = queue.front().second;
 			queue.pop();
-			if (processed.find(equalClass) == processed.end())
+			if (processed.find(equalClass) != processed.end())
 			{
 				continue;
 			}
@@ -256,11 +258,11 @@ bool CAutomaton::AutomatonsAreEquals()
 			{
 				if (expected.at(finalStateToTransitions.first) != _statesToInputSignalsToOutputSignals.at(_equalClassesToStatesVectors.at(equalClass).at(0)).at(finalStateToTransitions.first))
 				{
-					_output.PrintLine(expected.at(finalStateToTransitions.first), " != ", finalStateToTransitions.second);
+//					_output.PrintLine(expected.at(finalStateToTransitions.first), " != ", _statesToInputSignalsToOutputSignals.at(_equalClassesToStatesVectors.at(equalClass).at(0)).at(finalStateToTransitions.first));
 					return false;
 				}
 				processed.insert(equalClass);
-				queue.emplace(finalStateToTransitions.second, _sourceStatesToTransitions.at(state).at(expected.at(finalStateToTransitions.first)));
+				queue.emplace(finalStateToTransitions.second, _sourceStatesToTransitions.at(state).at(finalStateToTransitions.first));
 			}
 		}
 	}
